@@ -1,31 +1,30 @@
 package ru.job4j.auth.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.job4j.auth.model.Person;
-import ru.job4j.auth.repository.PersonRepository;
+import ru.job4j.auth.service.PersonService;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/person")
 public class PersonController {
 
-    private final PersonRepository persons;
-
-    public PersonController(final PersonRepository persons) {
-        this.persons = persons;
-    }
+    private final PersonService personService;
 
     @GetMapping("/")
     public List<Person> findAll() {
-        return this.persons.findAll();
+        return this.personService.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Person> findById(@PathVariable int id) {
-        var person = this.persons.findById(id);
+        var person = this.personService.findById(id);
         return new ResponseEntity<>(
                 person.orElse(new Person()),
                 person.isPresent() ? HttpStatus.OK : HttpStatus.NOT_FOUND
@@ -35,22 +34,30 @@ public class PersonController {
     @PostMapping("/")
     public ResponseEntity<Person> create(@RequestBody Person person) {
         return new ResponseEntity<>(
-                this.persons.save(person),
+                this.personService.save(person),
                 HttpStatus.CREATED
         );
     }
 
     @PutMapping("/")
     public ResponseEntity<Void> update(@RequestBody Person person) {
-        this.persons.save(person);
+        Optional<Person> personInDb = personService.findById(person.getId());
+        if (personInDb.isPresent()) {
+            this.personService.save(person);
+        } else {
+            throw new IllegalArgumentException("Such a person don't exist in the database.");
+        }
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
-        Person person = new Person();
-        person.setId(id);
-        this.persons.delete(person);
+        Optional<Person> personInDb = personService.findById(id);
+        if (personInDb.isPresent()) {
+            this.personService.delete(personInDb.get());
+        } else {
+            throw new IllegalArgumentException("Such a person don't exist in the database.");
+        }
         return ResponseEntity.ok().build();
     }
 }
