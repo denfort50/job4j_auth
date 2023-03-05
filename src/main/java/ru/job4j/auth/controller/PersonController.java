@@ -45,7 +45,7 @@ public class PersonController {
         if (personInDb.isPresent()) {
             this.personService.save(person);
         } else {
-            throw new IllegalArgumentException("Such a person don't exist in the database.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok().build();
     }
@@ -56,7 +56,7 @@ public class PersonController {
         if (personInDb.isPresent()) {
             this.personService.delete(personInDb.get());
         } else {
-            throw new IllegalArgumentException("Such a person don't exist in the database.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok().build();
     }
