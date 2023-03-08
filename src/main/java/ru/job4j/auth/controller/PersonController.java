@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @AllArgsConstructor
@@ -29,7 +28,7 @@ public class PersonController {
 
     @GetMapping("/all")
     public List<Person> findAll() {
-        return this.personService.findAll();
+        return personService.findAll();
     }
 
     @GetMapping("/{id}")
@@ -44,30 +43,24 @@ public class PersonController {
     @PostMapping("/")
     public ResponseEntity<Person> create(@RequestBody Person person) {
         return new ResponseEntity<>(
-                this.personService.save(person),
+                personService.save(person),
                 HttpStatus.CREATED
         );
     }
 
     @PutMapping("/")
     public ResponseEntity<Void> update(@RequestBody Person person) {
-        Optional<Person> personInDb = personService.findById(person.getId());
-        if (personInDb.isPresent()) {
-            this.personService.save(person);
-        } else {
-            throw new PersonDoesNotExistException("Such person does not exist in database");
-        }
+        personService.findById(person.getId())
+                .orElseThrow(() -> new PersonDoesNotExistException("Such person does not exist in database"));
+        personService.save(person);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
-        Optional<Person> personInDb = personService.findById(id);
-        if (personInDb.isPresent()) {
-            this.personService.delete(personInDb.get());
-        } else {
-            throw new PersonDoesNotExistException("Such person does not exist in database");
-        }
+        Person personInDb = personService.findById(id)
+                .orElseThrow(() -> new PersonDoesNotExistException("Such person does not exist in database"));
+        personService.delete(personInDb);
         return ResponseEntity.ok().build();
     }
 
