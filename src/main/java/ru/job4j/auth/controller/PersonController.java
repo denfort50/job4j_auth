@@ -12,6 +12,8 @@ import ru.job4j.auth.model.Person;
 import ru.job4j.auth.service.PersonService;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +40,7 @@ public class PersonController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Person> findById(@PathVariable int id) {
+    public ResponseEntity<Person> findById(@Min(0) @PathVariable int id) {
         var person = this.personService.findById(id);
         return new ResponseEntity<>(
                 person.orElse(new Person()),
@@ -47,7 +49,7 @@ public class PersonController {
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<String> updatePartOfFields(@RequestBody PersonDTO personDTO) {
+    public ResponseEntity<String> updatePartOfFields(@Valid @RequestBody PersonDTO personDTO) {
         Person person = personService.findByLogin(personDTO.getLogin())
                 .orElseThrow(() -> new PersonDoesNotExistException("Such person does not exist in database"));
         person.setPassword(personDTO.getPassword());
@@ -56,7 +58,7 @@ public class PersonController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<Person> create(@RequestBody Person person) {
+    public ResponseEntity<Person> create(@Valid @RequestBody Person person) {
         return new ResponseEntity<>(
                 personService.save(person),
                 HttpStatus.CREATED
@@ -64,7 +66,7 @@ public class PersonController {
     }
 
     @PutMapping("/")
-    public ResponseEntity<Void> update(@RequestBody Person person) {
+    public ResponseEntity<Void> update(@Valid @RequestBody Person person) {
         personService.findById(person.getId())
                 .orElseThrow(() -> new PersonDoesNotExistException("Such person does not exist in database"));
         personService.save(person);
@@ -72,7 +74,7 @@ public class PersonController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable int id) {
+    public ResponseEntity<Void> delete(@Min(0) @PathVariable int id) {
         Person personInDb = personService.findById(id)
                 .orElseThrow(() -> new PersonDoesNotExistException("Such person does not exist in database"));
         personService.delete(personInDb);
@@ -80,7 +82,7 @@ public class PersonController {
     }
 
     @PostMapping("/sign-up")
-    public void signUp(@RequestBody Person person) {
+    public void signUp(@Valid @RequestBody Person person) {
         String login = person.getLogin();
         String password = person.getPassword();
         if (login == null || password == null) {
