@@ -29,4 +29,8 @@ public class PersonService {
     public Optional<Person> findById(int id) {
         return personRepository.findById(id);
     }
+
+    public Optional<Person> findByLogin(String login) {
+        return personRepository.findByLogin(login);
+    }
 }

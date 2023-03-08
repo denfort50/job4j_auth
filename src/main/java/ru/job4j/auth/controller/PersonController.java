@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import ru.job4j.auth.model.PersonDTO;
 import ru.job4j.auth.exception.PersonDoesNotExistException;
 import ru.job4j.auth.model.Person;
 import ru.job4j.auth.service.PersonService;
@@ -43,6 +44,15 @@ public class PersonController {
                 person.orElse(new Person()),
                 person.isPresent() ? HttpStatus.OK : HttpStatus.NOT_FOUND
         );
+    }
+
+    @PatchMapping("/update")
+    public ResponseEntity<String> updatePartOfFields(@RequestBody PersonDTO personDTO) {
+        Person person = personService.findByLogin(personDTO.getLogin())
+                .orElseThrow(() -> new PersonDoesNotExistException("Such person does not exist in database"));
+        person.setPassword(personDTO.getPassword());
+        personService.save(person);
+        return ResponseEntity.ok("Password was updated");
     }
 
     @PostMapping("/")
