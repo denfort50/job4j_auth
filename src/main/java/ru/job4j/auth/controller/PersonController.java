@@ -27,8 +27,13 @@ public class PersonController {
     private final ObjectMapper objectMapper;
 
     @GetMapping("/all")
-    public List<Person> findAll() {
-        return personService.findAll();
+    public ResponseEntity<List<Person>> findAll() {
+        List<Person> personList = personService.findAll();
+        ResponseEntity<List<Person>> response = new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        if (!personList.isEmpty()) {
+            response = new ResponseEntity<>(personList, HttpStatus.OK);
+        }
+        return response;
     }
 
     @GetMapping("/{id}")
